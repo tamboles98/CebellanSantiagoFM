@@ -16,10 +16,10 @@ class request_handler():
     
     def __init__(self, api_key):
         ti = time.time()
-        self.short = {"EUW": (0, ti), "KR": (0, ti),
-                        "NA": (0, ti), "EUNE": (0, ti)}
-        self.long = {"EUW": (0, ti), "KR": (0, ti),
-                        "NA": (0, ti), "EUNE": (0, ti)}
+        self.short = {"EUW": [0, ti], "KR": [0, ti],
+                        "NA": [0, ti], "EUNE": [0, ti]}
+        self.long = {"EUW": [0, ti], "KR": [0, ti],
+                        "NA": [0, ti], "EUNE": [0, ti]}
         self.api_key = api_key
 
 
@@ -71,7 +71,6 @@ class request_handler():
 
     #A partir los metodos sirven para asegurarse que no se hacen demasiadas
     # requests a ningún server.
-
     def safe_request(self, server, url, headers):
         if self.ready_for_request(server):
             self.short[server][0] += 1
@@ -80,9 +79,10 @@ class request_handler():
         #Si hemos alcanzado algún limite comprueba que no sea hora de
         # resetear los tiempos
         if self.check_timers_reset(server) and self.ready_for_request(server):
-            self.short_n[server] += 1
-            self.long_n[server] += 1
+            self.short[server][0] += 1
+            self.long[server][0] += 1
             return requests.request("GET", url, headers=headers)
+        return None
     
     #Este metodo comprueba si ya ha pasado tiempo suficiente desde el ultimo
     # reset para el server y resetea si ese es el caso.
@@ -91,10 +91,10 @@ class request_handler():
         change = False #Comprueba si ha habido algún cambio al ejecutar esta
                         # acción
         if ti - self.short[server][1] > request_handler.LIMITSHORT[1]:
-            self.short[server] = (0, ti)
+            self.short[server] = [0, ti]
             change = True
         if ti - self.long[server][1] > request_handler.LIMITLONG[1]:
-            self.long[server] = (0, ti)
+            self.long[server] = [0, ti]
             change = True
         return change
 
@@ -106,15 +106,13 @@ class request_handler():
         time.sleep(waitime)
         time.sleep(1)
         ti = time.time()
-        self.short = {"EUW": (0, ti), "KR": (0, ti),
-                        "NA": (0, ti), "EUNE": (0, ti)}
-        self.long = {"EUW": (0, ti), "KR": (0, ti),
-                        "NA": (0, ti), "EUNE": (0, ti)}
+        self.short = {"EUW": [0, ti], "KR": [0, ti],
+                        "NA": [0, ti], "EUNE": [0, ti]}
+        self.long = {"EUW": [0, ti], "KR": [0, ti],
+                        "NA": [0, ti], "EUNE": [0, ti]}
         return None
 
     def ready_for_request(self, server):
         return (self.short[server][0] < request_handler.LIMITSHORT[0] and
         self.long[server][0] < request_handler.LIMITLONG[0])
-
-
         
