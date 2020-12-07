@@ -21,7 +21,7 @@ class request_handler():
 
     def get_diamond_i(self, server):
         url = request_handler.prepare_url(server = request_handler.ROUTES[server],
-            endpoint="/lol/league/v4/entries/RANKED_SOLO_5x5/DIAMOND/I?page=1")
+            endpoint="/lol/league/v4/entries/RANKED_SOLO_5x5/DIAMOND/I")
         headers = {
             'X-Riot-Token': self.api_key
             }
@@ -73,17 +73,17 @@ class request_handler():
         dev = requests.request("GET", url, headers=headers)
         #Si el servidor delvuelve None esperara antes de volver a intentar hacer
         # la request.
-        if dev is None:
+        if dev.status_code == 429:
             time.sleep(self.LIMITSHORT)
-        dev = requests.request("GET", url, headers=headers)
-        if dev is None:
-            time.sleep(self.LIMITLONG - self.LIMITLONG)
-        dev = requests.request("GET", url, headers=headers)
+            dev = requests.request("GET", url, headers=headers)
+        if dev.status_code == 429:
+            time.sleep(self.LIMITLONG - self.LIMITSHORT)
+            dev = requests.request("GET", url, headers=headers)
         #Una vez ya ha hecho todos los intentos esperados comprueba que la
         # request ha tenido el resultado esperado
         if dev is None:
             raise RuntimeError("got not response from server when it should")
         elif dev.status_code != 200:
-            raise ValueError("bad request in " + url)
+            raise ValueError("bad request in:" + str(dev.status_code))
         #Devuelve
         return dev
