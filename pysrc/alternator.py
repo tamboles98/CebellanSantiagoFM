@@ -31,7 +31,6 @@ class alternator():
                 return dev
             except StopIteration:
                 self.exhausted.append(self.__iterators.pop(pos))
-                print(self.exhausted)
                 if not self.__iterators:
                     self.__fully_exhausted = True
                     raise StopIteration

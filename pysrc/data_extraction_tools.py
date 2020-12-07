@@ -1,17 +1,20 @@
+from requests.models import Response
+
 #Esto no devuelve una lista devuelve un generador
-def get_summoner_ids_from_league(response):
+def get_summoner_ids_from_league(response: Response):
     return (player["summonerId"] for player in response.json())
 
 
-def get_summoner_account_id(response):
+def get_summoner_account_id(response: Response):
     return response.json()["accountId"]
 
 
-def get_summoner_history(response):
+#Esto no devuelve una lista devuelve un generador
+def get_summoner_history(response: Response):
     return (match["gameId"] for match in response.json()["matches"])
 
 
-def get_info_from_match(response):
+def get_info_from_match(response: Response):
     matchdata = response.json()
     #Hay dos equipos, rojo y azul. Dentro de la API el equipo azul viene
     # referido como 100 y el rojo como 200

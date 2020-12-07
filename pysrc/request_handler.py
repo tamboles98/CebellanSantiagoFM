@@ -84,7 +84,12 @@ class request_handler():
         # request ha tenido el resultado esperado
         if dev is None:
             raise RuntimeError("got not response from server when it should")
+        elif dev.status_code == 404:
+            raise RuntimeError("request status 404. tried to get unexistent data. "
+                                "probably requested match history for a player"
+                                "that did not play any games.")
         elif dev.status_code != 200:
-            raise ValueError("bad request in:" + str(dev.status_code))
+            raise ValueError("bad request in: " + dev.url + " status: " +
+                        str(dev.status_code))
         #Devuelve
         return dev
