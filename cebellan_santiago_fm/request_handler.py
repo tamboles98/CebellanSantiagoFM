@@ -26,7 +26,7 @@ class request_handler():
             'X-Riot-Token': self.api_key
             }
 
-        return self.safe_request(server=server, url=url, headers=headers)
+        return self.safe_request(url=url, headers=headers)
 
 
     def get_account_id(self, server, summoner_id):
@@ -37,10 +37,10 @@ class request_handler():
             'X-Riot-Token': self.api_key
             }
         
-        return self.safe_request(server=server, url=url, headers=headers)
+        return self.safe_request(url=url, headers=headers)
 
     
-    def get_match_history(self, server, account_id):
+    def get_match_history(self, server, account_id, params):
         endpoint = "/lol/match/v4/matchlists/by-account/{}".format(account_id)
         url = request_handler.prepare_url(server = request_handler.ROUTES[server],
             endpoint= endpoint)
@@ -48,7 +48,8 @@ class request_handler():
             'X-Riot-Token': self.api_key
             }
         
-        return self.safe_request(server=server, url=url, headers=headers)
+        return self.safe_request(url=url, headers=headers,
+                params = params)
     
     def get_match(self, server, match_id):
         endpoint = "/lol/match/v4/matches/{}".format(match_id)
@@ -58,7 +59,7 @@ class request_handler():
             'X-Riot-Token': self.api_key
             }
         
-        return self.safe_request(server=server, url=url, headers=headers)
+        return self.safe_request(url=url, headers=headers)
 
 
     @staticmethod
@@ -67,18 +68,18 @@ class request_handler():
 
     #A partir los metodos sirven para asegurarse que no se hacen demasiadas
     # requests a ningún server.
-    def safe_request(self, server, url, headers):
+    def safe_request(self, url, headers, params = {}):
         #Intenta hacer la request, cuando has hecho demasiadas request el
         # el servidor devuelve None.
-        dev = requests.request("GET", url, headers=headers)
+        dev = requests.request("GET", url, headers=headers, params = params)
         #Si el servidor delvuelve None esperara antes de volver a intentar hacer
         # la request.
         if dev.status_code == 429:
             time.sleep(self.LIMITSHORT)
-            dev = requests.request("GET", url, headers=headers)
+            dev = requests.request("GET", url, headers=headers, params = params)
         if dev.status_code == 429:
             time.sleep(self.LIMITLONG - self.LIMITSHORT)
-            dev = requests.request("GET", url, headers=headers)
+            dev = requests.request("GET", url, headers=headers, params = params)
         #Una vez ya ha hecho todos los intentos esperados comprueba que la
         # request ha tenido el resultado esperado
         if dev is None:
