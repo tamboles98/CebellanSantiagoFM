@@ -19,17 +19,17 @@ class request_handler():
         self.api_key = api_key
 
 
-    def get_diamond_i(self, server):
+    def get_diamond_i(self, server, params = {}):
         url = request_handler.prepare_url(server = request_handler.ROUTES[server],
             endpoint="/lol/league/v4/entries/RANKED_SOLO_5x5/DIAMOND/I")
         headers = {
             'X-Riot-Token': self.api_key
             }
 
-        return self.safe_request(url=url, headers=headers)
+        return self.safe_request(url=url, headers=headers, params=params)
 
 
-    def get_account_id(self, server, summoner_id):
+    def get_account_id(self, server, summoner_id, params={}):
         endpoint = "/lol/summoner/v4/summoners/{}".format(summoner_id)
         url = request_handler.prepare_url(server = request_handler.ROUTES[server],
             endpoint= endpoint)
@@ -37,10 +37,10 @@ class request_handler():
             'X-Riot-Token': self.api_key
             }
         
-        return self.safe_request(url=url, headers=headers)
+        return self.safe_request(url=url, headers=headers, params=params)
 
     
-    def get_match_history(self, server, account_id, params):
+    def get_match_history(self, server, account_id, params = {}):
         endpoint = "/lol/match/v4/matchlists/by-account/{}".format(account_id)
         url = request_handler.prepare_url(server = request_handler.ROUTES[server],
             endpoint= endpoint)
