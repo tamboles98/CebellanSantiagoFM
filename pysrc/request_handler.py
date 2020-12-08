@@ -78,7 +78,9 @@ class request_handler():
             time.sleep(self.LIMITSHORT)
             dev = requests.request("GET", url, headers=headers, params = params)
         if dev.status_code == 429:
+            print("Going to sleep...")
             time.sleep(self.LIMITLONG - self.LIMITSHORT)
+            print("Resuming")
             dev = requests.request("GET", url, headers=headers, params = params)
         #Una vez ya ha hecho todos los intentos esperados comprueba que la
         # request ha tenido el resultado esperado
