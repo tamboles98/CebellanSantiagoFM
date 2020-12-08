@@ -72,8 +72,10 @@ class request_handler():
         #Intenta hacer la request, cuando has hecho demasiadas request el
         # el servidor devuelve None.
         dev = requests.request("GET", url, headers=headers, params = params)
-        #Si el servidor delvuelve None esperara antes de volver a intentar hacer
-        # la request.
+        #Si el servidor devuelve 504 (request timeout) lo volvera a intentar
+        # otra vez
+        if dev.status_code == 504: 
+            dev = requests.request("GET", url, headers=headers, params = params)
         if dev.status_code == 429:
             time.sleep(self.LIMITSHORT)
             dev = requests.request("GET", url, headers=headers, params = params)
@@ -87,7 +89,7 @@ class request_handler():
         if dev is None:
             raise RuntimeError("got not response from server when it should")
         elif dev.status_code == 404:
-            raise RuntimeError("request status 404. tried to get unexistent data. "
+            raise ValueError("404 status. tried to get unexistent data. "
                                 "probably requested match history for a player"
                                 "that did not play any games.")
         elif dev.status_code != 200:
