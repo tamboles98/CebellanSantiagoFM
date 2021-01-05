@@ -3,7 +3,6 @@
 library(rjson)
 
 data <- fromJSON(file = 'matches.json')
-a = data[[1]]
 champion_codes = list()
 
 
