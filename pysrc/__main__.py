@@ -5,17 +5,19 @@ import data_extraction_tools as det
 from request_handler import request_handler
 from utilities import get_multiple_pages_diamond, unix_time_millis, check_progress, save_progress
 import datetime
+import os
 
 #Definimos la configuración ---------
 
 API_KEY = sys.argv[1] #La api key se pasa como argumento
+print(os.getcwd())
 servers = ["EUW", "KR", "NA", "EUNE"] #Los servidores que vamos a utilizar.
 #corea (KR) esta muy lejos por lo que a veces da error 504.
 desired_matches = 30000 #Los datos de cuantas partidas queremos obtener.
-players_til_dump = 100 #Cuantos jugadores analizar antes de guardar el progreso
+players_til_dump = 50 #Cuantos jugadores analizar antes de guardar el progreso
 save_progress_path = "data/pickle_progress" #Donde se guardara el progreso
 #Fecha a partir de la cual queremos partidas
-startime = int(unix_time_millis(datetime.datetime(2020, 12, 3)))
+startime = int(unix_time_millis(datetime.datetime(2020, 12, 24)))
 
 #Inicializamos valores ------------
 
