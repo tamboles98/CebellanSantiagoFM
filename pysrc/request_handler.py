@@ -70,29 +70,44 @@ class request_handler():
     # requests a ningún server.
     def safe_request(self, url, headers, params = {}):
         #Intenta hacer la request, cuando has hecho demasiadas request el
-        # el servidor devuelve None.
+        # el servidor devuelve un status 429.
         dev = requests.request("GET", url, headers=headers, params = params)
-        #Si el servidor devuelve 504 (request timeout) lo volvera a intentar
-        # otra vez
-        if dev.status_code == 504: 
-            dev = requests.request("GET", url, headers=headers, params = params)
-        if dev.status_code == 429:
-            time.sleep(self.LIMITSHORT)
-            dev = requests.request("GET", url, headers=headers, params = params)
-        if dev.status_code == 429:
-            print("Going to sleep...")
-            time.sleep(self.LIMITLONG - self.LIMITSHORT)
-            print("Resuming")
-            dev = requests.request("GET", url, headers=headers, params = params)
-        #Una vez ya ha hecho todos los intentos esperados comprueba que la
-        # request ha tenido el resultado esperado
         if dev is None:
             raise RuntimeError("got not response from server when it should")
-        elif dev.status_code == 404:
+
+        trying_count = 0
+        shortwait = False
+        #Reintentar la request si no se obtiene el resultado esperado
+        while not (200 <= dev.status_code < 300):
+            #La primera posiblidad es que hayamos hecho demasiadas request, en
+            # ese caso recibiremos un status 429 y el programa esperara
+            if dev.status_code == 429 and not shortwait:
+                time.sleep(self.LIMITSHORT)
+                shortwait = True
+                dev = requests.request("GET", url, headers=headers, params = params)
+            elif dev.status_code == 429 and shortwait:
+                print("Going to sleep...")
+                time.sleep(self.LIMITLONG - self.LIMITSHORT)
+                print("Resuming")
+                dev = requests.request("GET", url, headers=headers, params = params)
+            #El otro caso es un error 5XX, el más común 504, en este caso el
+            # programa hara varios reintentos antes de desistir
+            elif 500 <= dev.status_code < 600 and trying_count < 5: 
+                dev = requests.request("GET", url, headers=headers, params = params)
+                trying_count += 1
+            #Si ya se ha quedado sin opciones el programa desiste
+            else:
+                break
+        
+        #Una vez ya ha hecho todos los intentos esperados comprueba que la
+        # request ha tenido el resultado esperado
+        if dev.status_code == 404:
+            print(url)
+            print(params)
             raise ValueError("404 status. tried to get unexistent data. "
                                 "probably requested match history for a player"
                                 "that did not play any games.")
-        elif dev.status_code != 200:
+        elif not (200 <= dev.status_code < 300):
             raise ValueError("bad request in: " + dev.url + " status: " +
                         str(dev.status_code))
         #Devuelve

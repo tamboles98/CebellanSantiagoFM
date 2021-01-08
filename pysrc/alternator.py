@@ -2,11 +2,20 @@ from itertools import cycle
 
 
 class alternator():
+    """Un iterador que va alternando entre varios iteradores hasta que todos se
+    agotan
+    """
+    def __init__(self, iterators: dict):
+        """Crea un objeto alternator
 
-    def __init__(self, index, iterators):
-        if len(index) != len(iterators):
-            raise ValueError("index and iterators have different length")
-        self.__iterators = [tupl for tupl in zip(index, iterators)]
+        Parameters
+        ----------
+        iterators : dict
+            Un diccionario con claves el nombre con el que se referira a un
+            iterador y valor el iterador en cuestión.
+
+        """
+        self.__iterators = list(zip(iterators.keys(), iterators.values()))
         #Iteradores y sus indices
         self.__pos = 0 # De que iterador debe extraer a continuación
         self.__fully_exhausted = False # Si se han agotado todos los iteradores

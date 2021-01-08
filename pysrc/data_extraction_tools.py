@@ -11,7 +11,7 @@ def get_summoner_account_id(response: Response):
 
 #Esto no devuelve una lista devuelve un generador
 def get_summoner_history(response: Response):
-    return (match["gameId"] for match in response.json()["matches"])
+    return [match["gameId"] for match in response.json()["matches"]]
 
 
 def get_info_from_match(response: Response):

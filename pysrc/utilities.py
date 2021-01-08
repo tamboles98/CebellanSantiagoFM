@@ -1,16 +1,6 @@
-from typing import Iterable
-from data_extraction_tools import get_summoner_ids_from_league
-from request_handler import request_handler
-from itertools import chain
 import datetime
 import pickle
-
-#A veces para conseguir suficientes jugadores necesitamos varias paginas.
-# Este metodo hace precisamente eso y junta las paginas en un solo iterador.
-def get_multiple_pages_diamond(rh: request_handler, server: str, pages: int) -> Iterable:
-    return chain(*(get_summoner_ids_from_league(rh.get_diamond_i(
-        server=server, params= {"page": i}))
-        for i in range(1, pages + 1)))
+import csv
 
 
 def unix_time_millis(dt):
@@ -40,3 +30,39 @@ def save_progress(dirpath: str, players: set, games: set):
         pickle.dump(players, file)
     with open(dirpath + "/games.pickle", "wb") as file:
         pickle.dump(games, file)
+
+
+def read_format_save_csv(path: str, not_found: str = "proceed", keys: list = []) -> dict:
+    """Lee el formato de archivo en el que el spider guarda su progreso y extrae
+    los datos en un diccionario de conjuntos {region: set}
+
+    Parameters
+    ----------
+    path : str
+        El path al archivo en cuestión
+    not_found : str
+        Que hacer si no encuentra el archivo, dos opciones: "proceed" devuelve
+        el diccionario con listas vacias y "raise" para devolver el error.
+        Defaults to "proceed"
+
+    Returns
+    -------
+    dict
+        Diccionario de formato {region: set} con los datos del fichero.
+
+    Raises
+    ------
+    """
+    data = {key: set() for key in keys}
+    try:
+        with open(path, 'r') as file:
+            reader = csv.reader(file, delimiter = ",", quotechar = "\"")
+            for line in reader:
+                if line[0] not in data:
+                    data[line[0]] = {line[1]}
+                else:
+                    data[line[0]].add(line[1])
+    except FileNotFoundError as error:
+        if not_found == "raise":
+            raise error
+    return data
