@@ -46,7 +46,22 @@ def player_pipeline(summoner: str, rh: request_handler, server: str, startdate) 
 
 
 def spider(rh: request_handler, servers: list, ngames: int, npages: int = 10,
-    startdate: datetime.datetime = None) -> dict:
+            startdate: datetime.datetime = None) -> dict:
+
+    #Busca archivos locales con partidas y jugadores como manera de controlar
+    # el progreso. Esto es util en caso de que previamente haya habido un error
+    # durante la ejecución para no tener que empezar desde el principio.
+    players_analysed = read_format_save_csv("data/spider/analysed_players.csv",
+                                            keys = servers)
+    match_ids = read_format_save_csv("data/spider/matches_to_analyse.csv",
+                                    keys= servers)
+    
+    if sum(len(matches) for matches in match_ids.values()) >= ngames:
+        print("Se encontraron suficientes ({}) partidas en archivos locales".format(
+            sum(len(matches) for matches in match_ids.values())
+        ))
+        return match_ids
+
     if startdate is None:#Si no se le introduce fecha cogera la fecha de hoy
         startdate = datetime.datetime.today() - datetime.timedelta(days = 7)
     unix_startdate = int(unix_time_millis(startdate))
@@ -54,12 +69,8 @@ def spider(rh: request_handler, servers: list, ngames: int, npages: int = 10,
     #Saca listas con jugadores a analizar para cada región
     players_by_regions =  {server: get_multiple_pages_diamond(rh, server, npages)
                 for server in servers}
-    players_analysed = read_format_save_csv('data/spider/spider/analysed_players.csv',
-                                            keys = servers)
-    match_ids = read_format_save_csv("data/spider/matches_to_analyse.csv")
 
     player_iterator = alternator(players_by_regions)
-    match_ids = {server: set() for server in servers}
     with open('data/spider/matches_to_analyse.csv', 'a') as matchesfile, open("data/spider/analysed_players.csv", "a") as playersfile:
         matches_writer = csv.writer(matchesfile, delimiter = ",", quotechar = "\"")
         players_writer = csv.writer(playersfile, delimiter = ",", quotechar = "\"")
@@ -75,21 +86,23 @@ def spider(rh: request_handler, servers: list, ngames: int, npages: int = 10,
                     continue
                 else:
                     raise error
-
+            
             newgames = newgames - match_ids[server]
             match_ids[server] = match_ids[server].union(newgames)
 
             for match in newgames:
                 matches_writer.writerow([server, match])
             players_writer.writerow([server, player])
-
             if sum(len(matches) for matches in match_ids.values()) >= ngames:
                 break
-
+    
+    print("spider completado: se han obtenido {} partidas".format(
+            sum(len(matches) for matches in match_ids.values())))
     return match_ids
 
 
 api_key = sys.argv[1]
 request_hadler = request_handler(api_key)
 servers = ["EUW", "KR", "NA", "EUNE"]
-spider(request_hadler, servers, 50)
+spider(request_hadler, servers, 30000)
+
