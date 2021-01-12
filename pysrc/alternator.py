@@ -12,10 +12,12 @@ class alternator():
         ----------
         iterators : dict
             Un diccionario con claves el nombre con el que se referira a un
-            iterador y valor el iterador en cuestión.
+            iterador y valor el iterador|iterable en cuestión.
 
         """
-        self.__iterators = list(zip(iterators.keys(), iterators.values()))
+        keys = iterators.keys()
+        iters = (iter(i) for i in iterators.values())
+        self.__iterators = list(zip(keys, iters))
         #Iteradores y sus indices
         self.__pos = 0 # De que iterador debe extraer a continuación
         self.__fully_exhausted = False # Si se han agotado todos los iteradores

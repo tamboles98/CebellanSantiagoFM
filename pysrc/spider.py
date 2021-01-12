@@ -100,9 +100,3 @@ def spider(rh: request_handler, servers: list, ngames: int, npages: int = 10,
             sum(len(matches) for matches in match_ids.values())))
     return match_ids
 
-
-api_key = sys.argv[1]
-request_hadler = request_handler(api_key)
-servers = ["EUW", "KR", "NA", "EUNE"]
-spider(request_hadler, servers, 30000)
-

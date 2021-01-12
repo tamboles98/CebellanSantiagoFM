@@ -58,6 +58,7 @@ def read_format_save_csv(path: str, not_found: str = "proceed", keys: list = [])
         with open(path, 'r') as file:
             reader = csv.reader(file, delimiter = ",", quotechar = "\"")
             for line in reader:
+                line = line[:2]
                 if line[0] not in data:
                     data[line[0]] = {line[1]}
                 else:
